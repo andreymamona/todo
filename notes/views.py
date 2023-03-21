@@ -1,7 +1,19 @@
-from django.shortcuts import render
-from django.http import HttpResponse
+from django.shortcuts import render, redirect
+
+from notes.forms import AddNoteForm
+from notes.models import Note
 
 
 def index(request):
-    return HttpResponse("Notes index view")
+    notes = Note.objects.all()
+    if request.method == "POST":
+        form = AddNoteForm(request.POST)
+        if form.is_valid():
+            Note.objects.create(
+                author=request.user, title=form.cleaned_data["title"], text=form.cleaned_data["text"]
+            )
+            return redirect("index")
+    else:
+        form = AddNoteForm()
+    return render(request, "index.html", {"notes": notes, "form": form})
 
